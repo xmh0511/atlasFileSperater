@@ -40,11 +40,11 @@ int main() {
 	std::vector<std::unique_ptr<std::thread>> task;
 	for (auto& iter : fs::directory_iterator("./resource")) {
 		if (!fs::is_directory(iter)) {
-			auto extension = xfinal::utf16_to_gbk(iter.path().filename().extension());
-			auto fileName = xfinal::utf16_to_gbk(iter.path().filename());
+			auto extension = xfinal::utf8_to_gbk(iter.path().filename().extension().string());
+			auto fileName = xfinal::utf8_to_gbk(iter.path().filename().string());
 			if (extension == ".atlas") {
-				auto precedeName = fileName.substr(0, fileName.find("atlas")-1);
-				auto config_src = xfinal::utf16_to_gbk(iter.path());
+				auto precedeName = xfinal::utf8_to_gbk(iter.path().filename().stem().string());
+				auto config_src = xfinal::utf8_to_gbk(iter.path().string());
 				auto map_src = std::string("./resource/") + precedeName + ".png";
 				std::ifstream file(config_src.c_str());
 				if (file.is_open()) {
@@ -52,7 +52,7 @@ int main() {
 					ss << file.rdbuf();
 					try {
 						auto json = nlohmann::json::parse(ss.str());
-						auto frams = json["frames"];
+						auto& frams = json["frames"];
 						auto save_path = std::string("./resource/") + precedeName+"/";
 						if (!fs::exists(save_path)) {
 							fs::create_directory(save_path);
@@ -63,7 +63,7 @@ int main() {
 								auto filename = xfinal::utf8_to_gbk(jsonIter.key());
 								std::cout << filename << "\n";
 								pro.set_savepath(save_path + "/" + filename);
-								auto value = jsonIter.value()["frame"];
+								auto& value = jsonIter.value()["frame"];
 								int x = value["x"].get<int>();
 								int y = value["y"].get<int>();
 								int w = value["w"].get<int>();
@@ -72,7 +72,7 @@ int main() {
 									pro(x, w, y, h);
 								}
 								catch (std::exception& ec) {
-									std::cout << x << "," << w << "," << y << "," << h << std::endl;
+									std::cout<< ec.what()<<"  " << x << "," << w << "," << y << "," << h << "\n";
 								}
 							}
 						}));
